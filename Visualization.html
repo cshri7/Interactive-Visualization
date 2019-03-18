@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<head>
+  <script type="text/javascript" src="http://d3js.org/d3.v2.min.js?2.8.1"></script>
+  <script type="text/javascript">
+	function drawChord(name1)
+	{
+	  d3.selectAll("svg > *").remove();
+	  d3.selectAll("svg").remove();
+
+	  var color = d3.scale.category20();
+
+	  var width = 700,
+	      height = 700,
+	      outerRadius = Math.min(width,height)/2 - 10,
+	      innerRadius = outerRadius - 20;
+
+	  var formatPercent = d3.format(".1%");
+
+	  var arc = d3.svg.arc()
+	                  .innerRadius(innerRadius)
+	                  .outerRadius(outerRadius);
+
+	  var layout = d3.layout.chord()
+	                        .padding(.04)
+	                        .sortSubgroups(d3.descending)
+	                        .sortChords(d3.ascending);
+
+	  var path = d3.svg.chord()
+	                   .radius(innerRadius);
+
+	  var svg1 = d3.select("body")
+	              .append("svg")
+	              .attr("id", "sgv1")
+	              .attr("width", width)
+	              .attr("height", height)
+	              .append("g")
+	              .attr("id", "circle")
+	              .attr("transform", "translate(" + width/2 + "," + height/2 + ")");
+
+	  svg1.append("circle")
+	      .attr("r", outerRadius);
+
+	  d3.csv(name1 + ".csv", function(players)
+	  {
+	    d3.json(name1 + ".json", function(matrix)
+	    {
+	      layout.matrix(matrix);
+
+	      var group = svg1.selectAll(".group")
+	                     .data(layout.groups)
+	                     .enter()
+	                     .append("g")
+	                     .attr("class", "group")
+	                     .on("mouseover", mouseover);
+
+	      var groupPath = group.append("path")
+	                           .attr("id", function(d, i) { return "group-" + name1 + i; } )
+	                           .attr("d", arc)
+	                           .style("fill", function(d, i) { return color(players[i].name); } );
+
+	      var groupText = group.append("text")
+	                           .attr("x", 20)
+	                           .attr("dy", 8);
+
+	      groupText.append("textPath")
+	               .attr("xlink:href", function(d, i) { return "#group-" + name1 + i; } )
+	               .text(function(d, i) { return players[i].name; } );
+
+	      var chord = svg1.selectAll(".chord")
+	                     .data(layout.chords)
+	                     .enter()
+	                     .append("path")
+	                     .attr("class", "chord")
+	                     .style("fill", function(d, i) { return color(players[i].name); } )
+	                     .attr("d", path);
+
+	      function mouseover(d, i)
+	      {
+	        chord.classed("fade", function(p)
+	        {
+	          return p.source.index != i && p.target.index != i;
+	        });
+	      }
+	    });
+	  });
+	}
+</script>
+</head>
+
+<meta charset="utf-8">
+<title>Australian Open</title>
+
+<style>
+  @import url(style.css);
+
+  #circle circle {
+    fill: none;
+    pointer-events: all;
+  }
+
+  .group path {
+    fill-opacity: .8;
+  }
+
+  path.chord {
+    stroke: #FFF;
+    stroke-width: .25px;
+  }
+
+  #circle:hover path.fade {
+    fill-opacity: .1;
+    stroke: #FFF;
+  }
+
+  .node {
+    cursor: pointer;
+  }
+
+  .node:hover {
+    stroke: #000;
+    stroke-width: 1.5px;
+  }
+
+  .node--leaf {
+    fill: white;
+  }
+
+  .label {
+    font: 11px "Helvetica Neue", Helvetica, Arial, sans-serif;
+    text-anchor: middle;
+    text-shadow: 0 1px 0 #fff, 1px 0 0 #fff, -1px 0 0 #fff, 0 -1px 0 #fff;
+  }
+
+  .label,
+  .node--root,
+  .node--leaf {
+    pointer-events: none;
+  }
+</style>
+
+<body onload="drawChord('2004');">
+	<h3 style="text-align:center;">Australian Open Analysis</h3>
+
+	<center>
+		<p>The following chord diagram shows the no of aces scored by both the winner and the loser in all qaurter, semis and finals of the selected year</p>
+	</center>
+
+	<center>
+			<input type="radio" name="first" checked="checked" onclick="drawChord('2004');">2004
+			<input type="radio" name="first" onclick="drawChord('2005');">2005
+			<input type="radio" name="first" onclick="drawChord('2006');">2006
+			<input type="radio" name="first" onclick="drawChord('2007');">2007
+			<input type="radio" name="first" onclick="drawChord('2008');">2008
+			<input type="radio" name="first" onclick="drawChord('2009');">2009
+			<input type="radio" name="first" onclick="drawChord('2010');">2010
+			<input type="radio" name="first" onclick="drawChord('2011');">2011
+			<input type="radio" name="first" onclick="drawChord('2012');">2012
+			<input type="radio" name="first" onclick="drawChord('2013');">2013
+			<input type="radio" name="first" onclick="drawChord('2014');">2014
+			<br/>
+	</center>
+</body>
